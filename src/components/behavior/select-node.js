@@ -23,6 +23,7 @@ export default G6 => {
     onNodeClick (e) {
       // 先将所有当前是 click 状态的节点/edge 置为非 selected 状态
       this._clearSelected();
+      // 将元素的层级设置到最上层，即当有元素重叠时，将元素置于顶层。
       e.item.toFront();
       // 获取被点击的节点元素对象, 设置当前节点的 click 状态为 selected
       e.item.setState('nodeState', 'selected');

@@ -1,8 +1,9 @@
 <template>
   <div class="root">
     <div id="headPanel" :class="{ hidden: headVisible }">
-      <span class="logo">Vue 生命周期图示</span>
-      <router-link
+      <span class="logo">项目流程</span>
+      <button @click="saveData">保存</button>
+      <!-- <router-link
         :to="{ path: '/tree' }"
         style="
           float: right;
@@ -12,7 +13,7 @@
         "
       >
         脑图
-      </router-link>
+      </router-link> -->
       <i class="gb-toggle-btn" @click="headVisible = !headVisible" />
     </div>
     <!-- 左侧按钮 -->
@@ -74,13 +75,13 @@
 </template>
 
 <script>
-import G6 from "@antv/g6";
-import registerFactory from "./graph";
-import ItemPanel from "./ItemPanel.vue";
-import data from "./data.js";
+import G6 from '@antv/g6';
+import registerFactory from './graph';
+import ItemPanel from './ItemPanel.vue';
+import data from './data.js';
 
 export default {
-  name: "G6",
+  name: 'G6',
   components: {
     ItemPanel,
   },
@@ -93,47 +94,47 @@ export default {
       },
       // 保存线条样式
       lineStyle: {
-        type: "line",
+        type: 'line',
         width: 1,
       },
-      label: "",
+      label: '',
 
       labelCfg: {
         fontSize: 12,
         style: {
-          fill: "#fff",
+          fill: '#fff',
         },
       },
       node: {
-        fill: "",
-        lineDash: "none",
-        borderColor: "",
+        fill: '',
+        lineDash: 'none',
+        borderColor: '',
         width: 160,
         height: 60,
-        shape: "rect-node",
+        shape: 'rect-node',
       },
       nodeShapes: [
         {
-          name: "矩形",
-          shape: "rect-node",
+          name: '矩形',
+          shape: 'rect-node',
         },
         {
-          name: "圆形",
-          shape: "circle-node",
+          name: '圆形',
+          shape: 'circle-node',
         },
         {
-          name: "椭圆",
-          shape: "ellipise-node",
+          name: '椭圆',
+          shape: 'ellipise-node',
         },
         {
-          name: "菱形",
-          shape: "diamond-node",
+          name: '菱形',
+          shape: 'diamond-node',
         },
       ],
       headVisible: false,
       configVisible: false,
-      config: "",
-      tooltip: "",
+      config: '',
+      tooltip: '',
       top: 0,
       left: 0,
       canvasOffset: {
@@ -153,21 +154,35 @@ export default {
     this.graph.destroy();
   },
   methods: {
+    saveData() {
+      console.log(this.graph);
+      //通过this.graph.save()可获取当前数据
+      this.config.label = this.label;
+      this.graph.data(this.graph.save());
+      this.graph.render();
+      alert('保存成功，控制台可查看流程图数据');
+      console.log('当前数据');
+      console.log(this.graph.save());
+    },
     createGraphic() {
       const vm = this;
       const menu = new G6.Menu({
         //右键菜单属性事件
         offsetX: -20,
         offsetY: -50,
-        itemTypes: ["node"],
+        itemTypes: ['node'],
         getContent(e) {
           console.log(e);
-          const outDiv = document.createElement("div");
-
-          outDiv.style.width = "80px";
-          outDiv.style.cursor = "pointer";
+          const outDiv = document.createElement('div');
+          const getMenuItem = (flag) => {
+            return flag
+              ? '  <p id="formDetail">查看表单</p>'
+              : '<p id="formDetail">创建表单</p>';
+          };
+          outDiv.style.width = '80px';
+          outDiv.style.cursor = 'pointer';
           outDiv.innerHTML = `
-          <p id="formDetail">查看表单</p>
+        ${getMenuItem(0)}
           <p id="deleteNode">删除节点</p>
           `;
           return outDiv;
@@ -194,7 +209,7 @@ export default {
           // type: "xxx", // 位置将固定
         },
         defaultNode: {
-          type: "rect-node",
+          type: 'rect-node',
           style: {
             radius: 10,
           },
@@ -203,39 +218,39 @@ export default {
           },
         },
         defaultEdge: {
-          type: "polyline-edge", // 扩展了内置边, 有边的事件
+          type: 'polyline-edge', // 扩展了内置边, 有边的事件
           style: {
             radius: 5,
             offset: 15,
-            stroke: "#aab7c3",
+            stroke: '#aab7c3',
             lineAppendWidth: 10, // 防止线太细没法点中
             endArrow: true,
           },
         },
         // 覆盖全局样式
         nodeStateStyles: {
-          "nodeState:default": {
+          'nodeState:default': {
             opacity: 1,
           },
-          "nodeState:hover": {
+          'nodeState:hover': {
             opacity: 0.8,
           },
-          "nodeState:selected": {
+          'nodeState:selected': {
             opacity: 0.9,
           },
         },
         // 默认边不同状态下的样式集合
         edgeStateStyles: {
-          "edgeState:default": {
-            stroke: "#aab7c3",
+          'edgeState:default': {
+            stroke: '#aab7c3',
           },
-          "edgeState:selected": {
-            stroke: "#1890FF",
+          'edgeState:selected': {
+            stroke: '#1890FF',
           },
-          "edgeState:hover": {
+          'edgeState:hover': {
             animate: true,
-            animationType: "dash",
-            stroke: "#1890FF",
+            animationType: 'dash',
+            stroke: '#1890FF',
           },
         },
         plugins: [menu, minimap],
@@ -243,7 +258,7 @@ export default {
       });
 
       this.graph = new G6.Graph(cfg);
-      this.graph.read(data); // 读取数据
+      // this.graph.read(data); // 读取数据
       // this.graph.render();
       // this.graph.paint(); // 渲染到页面
       // this.graph.get('canvas').set('localRefresh', false); // 关闭局部渲染
@@ -257,45 +272,47 @@ export default {
       this.graph.removeItem(item);
     },
     formDetail(item) {
-      console.log("item");
+      console.log('item');
       console.log(item);
-      alert("跳转了噢");
+      alert('跳转了噢');
     },
     // 添加节点
     addNode(e) {
-      console.log("添加的节点的事件");
+      console.log('添加的节点的事件');
       console.log(e);
       const model = {
-        text: "node",
+        text: 'node',
         // id:  Util.uniqueId(),
         // 形状
         type: e.target.dataset.shape,
         // 坐标
+        label: '未命名',
         x: e.clientX - this.canvasOffset.x - 40,
         y: e.clientY - this.canvasOffset.y - 40,
       };
 
-      this.graph.addItem("node", model);
+      this.graph.addItem('node', model);
     },
     // 初始化图事件
     initGraphEvent() {
-      this.graph.on("on-canvas-dragend", (e) => {
+      this.graph.on('on-canvas-dragend', (e) => {
         this.canvasOffset.x = e.dx;
         this.canvasOffset.y = e.dy;
       });
 
-      this.graph.on("on-node-mouseenter", (e) => {
+      this.graph.on('on-node-mouseenter', (e) => {
         if (e && e.item) {
           // const model = e.item.get('model');
           // model.style.fill = 'rgba(24, 144, 255, .3)';
         }
       });
 
-      this.graph.on("after-node-selected", (e) => {
+      this.graph.on('after-node-selected', (e) => {
+        console.log(e);
         this.configVisible = !!e;
-
         if (e && e.item) {
-          const model = e.item.get("model");
+          const model = e.item.get('model');
+          console.log(model);
 
           this.config = model;
           this.label = model.label;
@@ -308,7 +325,7 @@ export default {
           this.node = {
             fill: model.style.fill,
             borderColor: model.style.stroke,
-            lineDash: model.style.lineDash || "none",
+            lineDash: model.style.lineDash || 'none',
             width: model.style.width,
             height: model.style.height,
             shape: model.type,
@@ -322,11 +339,11 @@ export default {
         }
       });
 
-      this.graph.on("after-edge-selected", (e) => {
+      this.graph.on('after-edge-selected', (e) => {
         this.configVisible = !!e;
 
         if (e && e.item) {
-          this.config = e.item.get("model").id;
+          this.config = e.item.get('model').id;
 
           this.graph.updateItem(e.item, {
             // shape: 'line-edge',
@@ -338,35 +355,35 @@ export default {
         }
       });
 
-      this.graph.on("on-edge-mousemove", (e) => {
+      this.graph.on('on-edge-mousemove', (e) => {
         if (e && e.item) {
-          this.tooltip = e.item.get("model").label;
+          this.tooltip = e.item.get('model').label;
           this.left = e.clientX + 40;
           this.top = e.clientY - 20;
         }
       });
 
-      this.graph.on("on-node-mousemove", (e) => {
+      this.graph.on('on-node-mousemove', (e) => {
         if (e && e.item) {
-          this.tooltip = e.item.get("model").id;
+          this.tooltip = e.item.get('model').id;
           this.left = e.clientX + 40;
           this.top = e.clientY - 20;
         }
       });
 
-      this.graph.on("on-node-mouseleave", (e) => {
+      this.graph.on('on-node-mouseleave', (e) => {
         if (e && e.item) {
-          this.tooltip = "";
+          this.tooltip = '';
         }
       });
 
-      this.graph.on("on-edge-mouseleave", (e) => {
+      this.graph.on('on-edge-mouseleave', (e) => {
         if (e && e.item) {
-          this.tooltip = "";
+          this.tooltip = '';
         }
       });
 
-      this.graph.on("before-node-removed", ({ target, callback }) => {
+      this.graph.on('before-node-removed', ({ target, callback }) => {
         console.log(target);
         setTimeout(() => {
           // 确认提示
@@ -374,20 +391,20 @@ export default {
         }, 1000);
       });
 
-      this.graph.on("after-node-dblclick", (e) => {
+      this.graph.on('after-node-dblclick', (e) => {
         if (e && e.item) {
           console.log(e.item);
         }
       });
 
       this.graph.on(
-        "before-edge-add",
+        'before-edge-add',
         ({ source, target, sourceAnchor, targetAnchor }) => {
           setTimeout(() => {
-            this.graph.addItem("edge", {
+            this.graph.addItem('edge', {
               id: `${+new Date() + (Math.random() * 10000).toFixed(0)}`, // edge id
-              source: source.get("id"),
-              target: target.get("id"),
+              source: source.get('id'),
+              target: target.get('id'),
               sourceAnchor,
               targetAnchor,
               // label:  'edge label',
@@ -397,53 +414,9 @@ export default {
       );
     },
     save(e) {
-      console.log(this.config);
-      console.log(this.node);
-      console.log({ ...this.config, ...this.node, label: this.label });
-      //     {
-      //   id:    '2',
-      //   type:  'circle-node',
-      //   style: {
-      //     r:         50,
-      //     width:     230,
-      //     height:    60,
-      //     fill:      '#65b586',
-      //     lineWidth: 0,
-      //   },
-      //   x:        500,
-      //   y:        300,
-      //   label:    '初始化\n事件和生命周期',
-      //   labelCfg: {
-      //     style: {
-      //       lineWidth: 2,
-      //       fontSize:  18,
-      //       stroke:    '#ccc',
-      //       fill:      '#fff',
-      //       textAlign: 'center',
-      //     },
-      //   },
-      // },
-      data.nodes.push({
-        id: "12",
-        x: 500,
-        y: 1100,
-        label: "结束",
-        labelCfg: {
-          style: {
-            fontSize: 16,
-            fill: "#fff",
-          },
-        },
-        style: {
-          width: 160,
-          height: 60,
-          fill: "#fdbc33",
-          lineWidth: 0,
-        },
-      });
-      // this.graph.data(data);
-      this.graph.render();
-      // eslint-disable-next-line no-alert
+      //通过this.graph.save()
+      console.log(e);
+
     },
   },
 };
