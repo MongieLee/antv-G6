@@ -11,6 +11,7 @@
     "@babel/core": "^7.10.4",
     "@babel/plugin-transform-runtime": "^7.10.4",
     "core-js": "^3.9.1",
+    "vcolorpicker": "^1.1.0",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
     "vuedraggable": "^2.24.3",

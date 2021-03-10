@@ -37,7 +37,9 @@
         draggable="true"
         class="gb-toggle-btn"
         @click="itemVisible = !itemVisible"
-        >{{ itemVisible ? "弹出" : "收起" }}
+        >
+        <!-- {{ itemVisible ? "弹出" : "收起" }} -->
+        
       </i>
     </div>
   </div>

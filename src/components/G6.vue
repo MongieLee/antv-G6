@@ -3,17 +3,6 @@
     <div id="headPanel" :class="{ hidden: headVisible }">
       <span class="logo">项目流程</span>
       <button @click="saveData">保存</button>
-      <!-- <router-link
-        :to="{ path: '/tree' }"
-        style="
-          float: right;
-          text-decoration: underline;
-          color: #1890ff;
-          font-size: 16px;
-        "
-      >
-        脑图
-      </router-link> -->
       <i class="gb-toggle-btn" @click="headVisible = !headVisible" />
     </div>
     <!-- 左侧按钮 -->
@@ -25,13 +14,15 @@
       <i class="gb-toggle-btn" @click="configVisible = !configVisible" />
       <h2 class="panel-title">数据配置</h2>
       <div class="config-data">
-        id: {{ config.id }}, data: {{ config.data }}
+        <!-- id: {{ config.id }} -->
+        对应表单:
+        {{ config.data && config.data.action ? config.data.action : "暂无" }}
       </div>
       <h2 class="panel-title">节点样式配置</h2>
       <div class="config-data">
         <div class="config-item">
           形状:
-          <select>
+          <select v-model="node.shape">
             <option
               v-for="(item, index) in nodeShapes"
               :key="index"
@@ -41,24 +32,32 @@
             </option>
           </select>
         </div>
-        <div class="config-item">背景色: <input :value="node.fill" /></div>
         <div class="config-item">
+          背景色:
+          <colorPicker v-model="color" />
+          <!-- <input :value="node.fill" /> -->
+        </div>
+        <div class="config-item">
+          边框颜色:
+          <!-- <input :value="node.borderColor" /> -->
+          <colorPicker v-model="stroke" />
+        </div>
+        <!-- <div class="config-item">
           边框虚线: <input :value="node.lineDash" />
         </div>
-        <div class="config-item">
-          边框颜色: <input :value="node.borderColor" />
-        </div>
+      
         <div class="config-item">宽: <input :value="node.width" />px</div>
-        <div class="config-item">高: <input :value="node.height" />px</div>
+        <div class="config-item">高: <input :value="node.height" />px</div> -->
       </div>
       <h2 class="panel-title">文字样式配置</h2>
       <div class="config-data">
         <div class="config-item">文字: <input v-model="label" /></div>
         <div class="config-item">
-          字体大小: <input v-model="labelCfg.fontSize" />
+          字体大小:
+          <input type="number" v-model.number="labelCfg.style.fontSize" />
         </div>
         <div class="config-item">
-          颜色: <input v-model="labelCfg.style.fill" />
+          颜色: <colorPicker v-model="labelCfg.style.fill" />
         </div>
       </div>
       <button @click="configVisible = false">取消</button>
@@ -75,18 +74,20 @@
 </template>
 
 <script>
-import G6 from '@antv/g6';
-import registerFactory from './graph';
-import ItemPanel from './ItemPanel.vue';
-import data from './data.js';
+import G6 from "@antv/g6";
+import registerFactory from "./graph";
+import ItemPanel from "./ItemPanel.vue";
+import data from "./data.js";
 
 export default {
-  name: 'G6',
+  name: "G6",
   components: {
     ItemPanel,
   },
   data() {
     return {
+      color: "#ecf3ff",
+      stroke: "#1890FF",
       graph: {},
       highLight: {
         undo: false,
@@ -94,47 +95,47 @@ export default {
       },
       // 保存线条样式
       lineStyle: {
-        type: 'line',
+        type: "line",
         width: 1,
       },
-      label: '',
+      label: "test",
 
       labelCfg: {
-        fontSize: 12,
         style: {
-          fill: '#fff',
+          fontSize: 12,
+          fill: "#fff",
         },
       },
       node: {
-        fill: '',
-        lineDash: 'none',
-        borderColor: '',
+        fill: "",
+        lineDash: "none",
+        borderColor: "",
         width: 160,
         height: 60,
-        shape: 'rect-node',
+        shape: "rect-node",
       },
       nodeShapes: [
         {
-          name: '矩形',
-          shape: 'rect-node',
+          name: "矩形",
+          shape: "rect-node",
         },
         {
-          name: '圆形',
-          shape: 'circle-node',
+          name: "圆形",
+          shape: "circle-node",
         },
         {
-          name: '椭圆',
-          shape: 'ellipise-node',
+          name: "椭圆",
+          shape: "ellipse-node",
         },
         {
-          name: '菱形',
-          shape: 'diamond-node',
+          name: "菱形",
+          shape: "diamond-node",
         },
       ],
       headVisible: false,
       configVisible: false,
-      config: '',
-      tooltip: '',
+      config: "",
+      tooltip: "",
       top: 0,
       left: 0,
       canvasOffset: {
@@ -155,32 +156,32 @@ export default {
   },
   methods: {
     saveData() {
-      console.log(this.graph);
       //通过this.graph.save()可获取当前数据
-      this.config.label = this.label;
       this.graph.data(this.graph.save());
       this.graph.render();
-      alert('保存成功，控制台可查看流程图数据');
-      console.log('当前数据');
+      alert("保存成功，控制台可查看流程图数据");
+      console.log("当前数据:");
       console.log(this.graph.save());
+      console.log("----------------------------");
     },
     createGraphic() {
       const vm = this;
+      const grid = new G6.Grid();
       const menu = new G6.Menu({
         //右键菜单属性事件
         offsetX: -20,
         offsetY: -50,
-        itemTypes: ['node'],
+        itemTypes: ["node"],
         getContent(e) {
           console.log(e);
-          const outDiv = document.createElement('div');
+          const outDiv = document.createElement("div");
           const getMenuItem = (flag) => {
             return flag
               ? '  <p id="formDetail">查看表单</p>'
               : '<p id="formDetail">创建表单</p>';
           };
-          outDiv.style.width = '80px';
-          outDiv.style.cursor = 'pointer';
+          outDiv.style.width = "80px";
+          outDiv.style.cursor = "pointer";
           outDiv.innerHTML = `
         ${getMenuItem(0)}
           <p id="deleteNode">删除节点</p>
@@ -209,51 +210,53 @@ export default {
           // type: "xxx", // 位置将固定
         },
         defaultNode: {
-          type: 'rect-node',
+          type: "rect-node",
           style: {
             radius: 10,
           },
           labelCfg: {
-            fontSize: 20,
+            style: {
+              fontSize: 20,
+            },
           },
         },
         defaultEdge: {
-          type: 'polyline-edge', // 扩展了内置边, 有边的事件
+          type: "polyline-edge", // 扩展了内置边, 有边的事件
           style: {
             radius: 5,
             offset: 15,
-            stroke: '#aab7c3',
+            stroke: "#aab7c3",
             lineAppendWidth: 10, // 防止线太细没法点中
             endArrow: true,
           },
         },
         // 覆盖全局样式
         nodeStateStyles: {
-          'nodeState:default': {
+          "nodeState:default": {
             opacity: 1,
           },
-          'nodeState:hover': {
+          "nodeState:hover": {
             opacity: 0.8,
           },
-          'nodeState:selected': {
+          "nodeState:selected": {
             opacity: 0.9,
           },
         },
         // 默认边不同状态下的样式集合
         edgeStateStyles: {
-          'edgeState:default': {
-            stroke: '#aab7c3',
+          "edgeState:default": {
+            stroke: "#aab7c3",
           },
-          'edgeState:selected': {
-            stroke: '#1890FF',
+          "edgeState:selected": {
+            stroke: "#1890FF",
           },
-          'edgeState:hover': {
+          "edgeState:hover": {
             animate: true,
-            animationType: 'dash',
-            stroke: '#1890FF',
+            animationType: "dash",
+            stroke: "#1890FF",
           },
         },
-        plugins: [menu, minimap],
+        plugins: [menu, minimap, grid],
         // ... 其他G6原生入参
       });
 
@@ -272,60 +275,72 @@ export default {
       this.graph.removeItem(item);
     },
     formDetail(item) {
-      console.log('item');
+      console.log("item");
       console.log(item);
-      alert('跳转了噢');
+      alert("跳转了噢");
     },
     // 添加节点
     addNode(e) {
-      console.log('添加的节点的事件');
-      console.log(e);
       const model = {
-        text: 'node',
-        // id:  Util.uniqueId(),
+        text: "node",
         // 形状
         type: e.target.dataset.shape,
         // 坐标
-        label: '未命名',
+        label: "未命名",
+        data: {
+          action: "初始化",
+        },
+        labelCfg: {
+          style: {
+            fontSize: 12,
+            fill: "#1890ff",
+            textAlign: "center",
+            textBaseline: "middle",
+            fontWeight: "bold",
+          },
+        },
         x: e.clientX - this.canvasOffset.x - 40,
         y: e.clientY - this.canvasOffset.y - 40,
       };
 
-      this.graph.addItem('node', model);
+      this.graph.addItem("node", model);
     },
     // 初始化图事件
     initGraphEvent() {
-      this.graph.on('on-canvas-dragend', (e) => {
+      this.graph.on("on-canvas-dragend", (e) => {
         this.canvasOffset.x = e.dx;
         this.canvasOffset.y = e.dy;
+        console.log("ceshi");
       });
 
-      this.graph.on('on-node-mouseenter', (e) => {
+      this.graph.on("on-node-mouseenter", (e) => {
         if (e && e.item) {
           // const model = e.item.get('model');
           // model.style.fill = 'rgba(24, 144, 255, .3)';
         }
       });
 
-      this.graph.on('after-node-selected', (e) => {
-        console.log(e);
+      this.graph.on("after-node-selected", (e) => {
+        //点击空白画布也会触发此事件，只有Node对象才会带有item
         this.configVisible = !!e;
         if (e && e.item) {
-          const model = e.item.get('model');
+          console.log(e);
+          this.tempItem = e;
+          const model = e.item.get("model");
           console.log(model);
 
           this.config = model;
           this.label = model.label;
           this.labelCfg = {
-            fontSize: model.labelCfg.fontSize,
             style: {
-              fill: model?.labelCfg?.style?.fill,
+              fontSize: model.labelCfg.style.fontSize,
+              fill: model.labelCfg.style.fill,
             },
           };
           this.node = {
             fill: model.style.fill,
             borderColor: model.style.stroke,
-            lineDash: model.style.lineDash || 'none',
+            lineDash: model.style.lineDash || "none",
             width: model.style.width,
             height: model.style.height,
             shape: model.type,
@@ -339,11 +354,11 @@ export default {
         }
       });
 
-      this.graph.on('after-edge-selected', (e) => {
+      this.graph.on("after-edge-selected", (e) => {
         this.configVisible = !!e;
 
         if (e && e.item) {
-          this.config = e.item.get('model').id;
+          this.config = e.item.get("model").id;
 
           this.graph.updateItem(e.item, {
             // shape: 'line-edge',
@@ -355,35 +370,35 @@ export default {
         }
       });
 
-      this.graph.on('on-edge-mousemove', (e) => {
+      this.graph.on("on-edge-mousemove", (e) => {
         if (e && e.item) {
-          this.tooltip = e.item.get('model').label;
+          this.tooltip = e.item.get("model").label;
           this.left = e.clientX + 40;
           this.top = e.clientY - 20;
         }
       });
 
-      this.graph.on('on-node-mousemove', (e) => {
+      this.graph.on("on-node-mousemove", (e) => {
         if (e && e.item) {
-          this.tooltip = e.item.get('model').id;
+          this.tooltip = e.item.get("model").id;
           this.left = e.clientX + 40;
           this.top = e.clientY - 20;
         }
       });
 
-      this.graph.on('on-node-mouseleave', (e) => {
+      this.graph.on("on-node-mouseleave", (e) => {
         if (e && e.item) {
-          this.tooltip = '';
+          this.tooltip = "";
         }
       });
 
-      this.graph.on('on-edge-mouseleave', (e) => {
+      this.graph.on("on-edge-mouseleave", (e) => {
         if (e && e.item) {
-          this.tooltip = '';
+          this.tooltip = "";
         }
       });
 
-      this.graph.on('before-node-removed', ({ target, callback }) => {
+      this.graph.on("before-node-removed", ({ target, callback }) => {
         console.log(target);
         setTimeout(() => {
           // 确认提示
@@ -391,20 +406,20 @@ export default {
         }, 1000);
       });
 
-      this.graph.on('after-node-dblclick', (e) => {
+      this.graph.on("after-node-dblclick", (e) => {
         if (e && e.item) {
           console.log(e.item);
         }
       });
 
       this.graph.on(
-        'before-edge-add',
+        "before-edge-add",
         ({ source, target, sourceAnchor, targetAnchor }) => {
           setTimeout(() => {
-            this.graph.addItem('edge', {
+            this.graph.addItem("edge", {
               id: `${+new Date() + (Math.random() * 10000).toFixed(0)}`, // edge id
-              source: source.get('id'),
-              target: target.get('id'),
+              source: source.get("id"),
+              target: target.get("id"),
               sourceAnchor,
               targetAnchor,
               // label:  'edge label',
@@ -413,10 +428,18 @@ export default {
         }
       );
     },
-    save(e) {
-      //通过this.graph.save()
-      console.log(e);
+    save() {
+      //保存单个节点触发
+      this.config.label = this.label;
+      this.config.type = this.node.shape;
+      this.config.style.fill = this.color;
+      this.config.style.stroke = this.stroke;
+      this.config.labelCfg.style.stroke = this.labelCfg.style.fill;
+      this.config.labelCfg.style.fontSize = this.labelCfg.style.fontSize;
 
+      //通过id查找到Item，传入Item和model更新节点
+      const item = this.graph.findById(this.config.id);
+      this.graph.updateItem(item, this.config);
     },
   },
 };
