@@ -1,3 +1,10 @@
+@import './reset.scss';
+.icon {
+  width: 1em; height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
 @font-face {
   font-family: "iconfont";
   src        : url('//at.alicdn.com/t/font_1540180_5hj90so1tea.eot?t=1578985252153');
@@ -418,7 +425,7 @@
   transform: none !important;
 }
 
-input{
+input,textarea{
+  resize:none;
   outline: none;
-  border:none;
 }
