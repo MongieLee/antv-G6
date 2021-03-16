@@ -3,14 +3,13 @@
     <div class="sider">
       <p class="group-title">
         基础组件
-        <button @click="save">保存</button>
+        <button class="biz-btn" @click="save">保存</button>
       </p>
       <draggable
         class="draggableContainer"
         :list="componentList"
         :sort="false"
         :group="{ name: 'people', pull: 'clone', put: false }"
-        @change="log"
       >
         <li
           class="component-group-item"
@@ -30,9 +29,9 @@
     <div class="main">
       <draggable
         class="dragArea list-group"
+        @change="factoryChange"
         :list="formFactory"
         group="people"
-        @change="log"
       >
         <div
           @click="handelClick(element, index)"
@@ -43,7 +42,12 @@
           <span>{{ element.title }}：</span>
           <div class="item-wrapper">
             <div v-if="element.name === 'input'">
-              <input class="cp-input" type="text" readonly />
+              <input
+                :placeholder="element.placeholder"
+                class="cp-input"
+                type="text"
+                readonly
+              />
             </div>
             <div v-else-if="element.name === 'dropdown'">
               <select>
@@ -55,10 +59,16 @@
             <div v-else-if="element.name === 'textaera'">
               <textarea readonly class="cp-textaera" />
             </div>
+            <div v-else-if="element.name === 'radio'">
+              <label v-for="ele in element.data">
+                <input disabled type="radio" :name="element.mark" :value="ele.value" />
+                {{ ele.name }}</label
+              >
+            </div>
           </div>
           <div v-if="index === currentTag.added.newIndex" class="actions">
             <div>
-              <svg class="icon" aria-hidden="true" @click="handelDelete">
+              <svg class="icon" aria-hidden="true" @click="handelDelete(index)">
                 <use xlink:href="#icon-delete"></use>
               </svg>
             </div>
@@ -70,16 +80,79 @@
     <div class="options">
       <p class="group-title">字段属性</p>
       <div v-if="currentTag.added.newIndex !== null">
-        <div>
-          <span>标题：</span>
-          <input @input="kk" :value="currentTag.added.element.title" />
+        <div class="option-item">
+          <p>字段标识：</p>
+          <input
+            class="cp-input"
+            @input="changeOption($event, 'mark')"
+            :value="currentTag.added.element.mark"
+          />
+        </div>
+        <div class="option-item">
+          <p>标题：</p>
+          <input
+            class="cp-input"
+            @input="changeOption($event, 'title')"
+            :value="currentTag.added.element.title"
+          />
+        </div>
+        <div class="option-item" v-if="!currentTag.added.element.data">
+          <p>占位符：</p>
+          <input
+            class="cp-input"
+            @input="changeOption($event, 'placeholder')"
+            :value="currentTag.added.element.placeholder"
+          />
+        </div>
+        <div class="option-item" v-if="!currentTag.added.element.data">
+          <p>操作属性：</p>
+          <label>
+            <input
+              @input="disabledChange"
+              :checked="currentTag.added.element.disabled"
+              type="checkbox"
+            />
+            禁用
+          </label>
+        </div>
+
+        <div class="option-item" v-if="currentTag.added.element.data">
+          <p>
+            单选数据
+            <button class="biz-btn" @click="addRadioItem">添加数据项</button>
+          </p>
+          <div class="cp-radio">
+            <label v-for="(element, index) in currentTag.added.element.data">
+              <input
+                type="radio"
+                :name="currentTag.added.element.mark"
+                :value="element.value"
+              />
+              <input class="cp-input" v-model="element.value" />
+              <input class="cp-input" v-model="element.name" />
+              <button class="biz-btn-danger" @click="remoteRadioItem(index)">
+                X
+              </button>
+            </label>
+          </div>
+        </div>
+        <div class="option-item">
+          <p>校验：</p>
+          <label>
+            <input
+              @input="changeOption($event, 'required')"
+              :checked="currentTag.added.element.required"
+              type="checkbox"
+            />
+            必填
+          </label>
         </div>
         <div>
           {{ currentTag }}
         </div>
       </div>
       <template v-else>
-        <div class="option-item">暂未选择节点</div>
+        <div class="option-nodata">暂未选择节点</div>
       </template>
     </div>
     <!-- <rawDisplayer class="col-3" :value="list1" title="List 1" />
@@ -91,27 +164,67 @@
 import draggable from "vuedraggable";
 const originComponentList = () => [
   {
-    id: Math.random() * 10000,
+    id: `input_${Math.random() * 10000}`,
     describe: "输入框",
     name: "input",
     iconName: "input",
     title: "输入框",
+    mark: "",
+    placeholder: "",
+    disabled: false,
+    hasPh: true,
+    required: false,
   },
   {
-    id: Math.random() * 10000,
-
+    id: `select${Math.random() * 10000}`,
     describe: "下拉框",
     name: "dropdown",
-    iconName: "riqi",
+    iconName: "drop_down",
     title: "下拉框",
+    mark: "",
+    hasPh: true,
+    placeholder: "",
+    disabled: false,
+    required: false,
   },
   {
-    id: Math.random() * 10000,
-
+    id: `radio${Math.random() * 10000}`,
+    describe: "单选框",
+    name: "radio",
+    iconName: "danxuanti",
+    title: "单选",
+    mark: "default",
+    placeholder: "",
+    disabled: false,
+    required: false,
+    data: [
+      { name: "北京", value: 1, checked: false },
+      { name: "上海", value: 2, checked: false },
+      { name: "广州", value: 3, checked: false },
+    ],
+  },
+  {
+    id: `checkbox${Math.random() * 10000}`,
+    describe: "多选框",
+    name: "checkbox",
+    iconName: "check-box-outline",
+    title: "多选框",
+    mark: "default",
+    placeholder: "",
+    disabled: false,
+    required: false,
+  },
+  {
+    id: `textaera${Math.random() * 10000}`,
     describe: "多行文本",
     name: "textaera",
     iconName: "textarea",
+    hasPh: true,
     title: "多行文本",
+    mark: "",
+    placeholder: "",
+    disabled: false,
+    required: false,
   },
 ];
 export default {
@@ -137,24 +250,74 @@ export default {
     if (window.localStorage.getItem("a")) {
       const b = JSON.parse(window.localStorage.getItem("a"));
       this.formFactory = b;
+      console.log(this.formFactory);
+      this.currentTag = {
+        added: {
+          element: b[0],
+          newIndex: 0,
+        },
+      };
     }
-    console.log(1111111);
   },
   methods: {
-    kk(e) {
-      console.log(this.formFactory);
+    factoryChange(e) {
+      console.log('我执行了')
+      // this.componentList = originComponentList(); // (this.currentTag = JSON.parse(JSON.stringify(e)));
+      if (e.moved) {
+        const temp = { added: { ...e.moved } };
+        this.currentTag = JSON.parse(JSON.stringify(temp));
+      } else {
+        this.currentTag = JSON.parse(JSON.stringify(e));
+      }
+    },
+    changeOption(e, str) {
+      const data = "checked" in e.target ? e.target.checked : e.target.value;
+      console.log(data);
       this.formFactory.forEach((element) => {
         if (element.id === this.currentTag.added.element.id) {
-          element.title = e.target.value;
-          this.currentTag.added.element.title = e.target.value;
+          element[str] = data;
+          this.currentTag.added.element[str] = data;
         }
       });
     },
-    show() {},
-    log: function (e) {
-      this.componentList = originComponentList(); // (this.currentTag = JSON.parse(JSON.stringify(e)));
-      this.currentTag = JSON.parse(JSON.stringify(e));
-      console.log(this.currentTag);
+
+    markChange(e) {
+      this.formFactory.forEach((element) => {
+        if (element.id === this.currentTag.added.element.id) {
+          element.mark = e.target.value;
+          this.currentTag.added.element.mark = e.target.value;
+        }
+      });
+    },
+    requiredChange(e) {
+      this.formFactory.forEach((element) => {
+        if (element.id === this.currentTag.added.element.id) {
+          element.required = e.target.value;
+          this.currentTag.added.element.required = e.target.value;
+        }
+      });
+    },
+
+    disabledChange(e) {
+      this.formFactory.forEach((element) => {
+        if (element.id === this.currentTag.added.element.id) {
+          console.dir(e.target.checked);
+          element.disabled = e.target.checked;
+          this.currentTag.added.element.disabled = e.target.checked;
+        }
+      });
+    },
+
+    remoteRadioItem(index) {
+      if (this.currentTag.added.element.data.length <= 1) {
+        alert("最少保留一项");
+        return;
+      }
+      this.currentTag.added.element.data.splice(index, 1);
+    },
+    addRadioItem() {
+      const data = this.currentTag.added.element.data;
+      data.push({ name: "未设名称", value: "未设值", checked: false });
     },
     save() {
       if (this.formFactory.length === 0) {
@@ -172,11 +335,18 @@ export default {
         },
       };
     },
-    checkSelected(data, e) {
-      console.log(data, e);
-    },
-    handelDelete() {
-      this.formFactory.splice(this.currentTag.newIndex, 1);
+    handelDelete(index) {
+      // if (this.formFactory.length >= 1) this.currentTag = this.formFactory[0];
+      this.formFactory.splice(index, 1);
+      // if (this.formFactory.length >= 1) {
+      //   // this.currentTag = {
+      //   //   added: {
+      //   //     element: {},
+      //   //     newIndex: null,
+      //   //   },
+      //   // };
+      //   this.currentTag = {};
+      // }
     },
   },
 };
@@ -214,6 +384,11 @@ export default {
   }
   .item-wrapper {
     flex: 1;
+    input {
+      vertical-align: middle;
+      margin-top: -1px;
+      margin-bottom: 1px;
+    }
   }
 }
 
@@ -280,28 +455,6 @@ export default {
       }
     }
   }
-  .cp-input {
-    height: 32px;
-    line-height: 32px;
-    width: 100%;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    &:hover {
-      cursor: pointer;
-    }
-  }
-
-  .cp-textaera {
-    margin-top: 5px;
-    height: 48px;
-    line-height: 32px;
-    width: 100%;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    &:hover {
-      cursor: pointer;
-    }
-  }
 }
 
 .sider {
@@ -317,7 +470,78 @@ export default {
   width: 250px;
   padding: 0 8px 8px 8px;
   .option-item {
+    label {
+      display: flex;
+      align-items: center;
+    }
+    p {
+      margin: 4px;
+    }
     border-bottom: 1px #ccc solid;
+    padding-bottom: 10px;
+  }
+}
+
+.biz-btn {
+  outline: none;
+  border: none;
+  padding: 6px 10px;
+  background: #1890ff;
+  color: white;
+  border-radius: 4px;
+  &:hover {
+    background: #40a9ff;
+    cursor: pointer;
+  }
+  &-danger {
+    outline: none;
+    border: none;
+    padding: 6px 10px;
+    color: white;
+    border-radius: 4px;
+    background: #ff4d4f;
+    &:hover {
+      background: #ff7875;
+      cursor: pointer;
+    }
+  }
+}
+
+.cp-input {
+  height: 32px;
+  line-height: 32px;
+  width: 80%;
+  padding: 0 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  &::placeholder {
+    color: #c0c4cc;
+  }
+}
+
+.cp-textaera {
+  margin-top: 5px;
+  height: 48px;
+  line-height: 32px;
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.cp-radio {
+  label {
+    vertical-align: text-bottom;
+    display: inline-flex;
+    align-items: center;
+    input {
+      margin: 0 8px;
+      vertical-align: middle;
+      margin-top: -1px;
+      margin-bottom: 1px;
+      &:not(:first-child) {
+        margin-top: 2px;
+      }
+    }
   }
 }
 </style>

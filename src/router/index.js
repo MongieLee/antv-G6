@@ -1,7 +1,7 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import G6 from "../components/G6";
-import H1 from "../components/HelloWorld";
+import T1 from "../components/HelloWorld";
 
 Vue.use(VueRouter);
 
@@ -9,7 +9,7 @@ const routes = [
   {
     path: "/",
     name: "Home",
-    component: H1,
+    component: T1,
   },
   {
     path: "/about",
@@ -18,7 +18,7 @@ const routes = [
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () =>
-      import(/* webpackChunkName: "about" */ "../components/HelloWorld.vue"),
+      import(/* webpackChunkName: "about" */ "../components/G6.vue"),
   },
 ];
 
